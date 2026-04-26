@@ -1,0 +1,127 @@
+.home-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.left-panel {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px;
+}
+
+.pretty-lady {
+  height: 300px;
+  width: 300px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.emoji-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.emoji-item {
+  font-size: 2rem;
+  opacity: 1;
+  transition: opacity 1.2s ease;
+}
+
+.emoji-item.hidden {
+  opacity: 0;
+}
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.photo-container {
+  overflow: hidden;
+  border-radius: 8px;
+  opacity: 1;
+  transition: opacity 1.2s ease;
+}
+
+.photo-container.hidden {
+  opacity: 0;
+}
+
+.grid-photo {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  display: block;
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+}
+
+.grid-photo:hover {
+  transform: scale(1.05);
+}
+
+/* Upload Section */
+.upload-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.upload-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.upload-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.upload-button:active {
+  transform: translateY(0);
+}
+
+.upload-error {
+  color: #ff6b6b;
+  font-size: 0.875rem;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.uploaded-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 1.2rem;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.photo-container {
+  position: relative;
+}

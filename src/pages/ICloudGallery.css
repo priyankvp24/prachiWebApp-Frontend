@@ -1,0 +1,393 @@
+/* ICloud Gallery Styles */
+.icloud-gallery {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+/* Header */
+.gallery-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.gallery-header h1 {
+  font-size: 2.5rem;
+  color: #1d1d1f;
+  margin-bottom: 0.5rem;
+}
+
+.gallery-description {
+  color: #6e6e73;
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* Configuration Section */
+.config-section {
+  background: #f5f5f7;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.config-form {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #d2d2d7;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #007aff;
+}
+
+.form-group input:disabled {
+  background: #e8e8ed;
+  cursor: not-allowed;
+}
+
+/* Buttons */
+.btn-primary {
+  background: #007aff;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 200px;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #005ecb;
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  background: #a1a1a6;
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  background: #ff3b30;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-danger:hover {
+  background: #d32f2f;
+}
+
+/* Config Status */
+.config-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.status-info {
+  flex: 1;
+  min-width: 200px;
+}
+
+.status-info p {
+  margin: 0.25rem 0;
+  color: #1d1d1f;
+}
+
+.album-url {
+  word-break: break-all;
+  color: #007aff !important;
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+
+.last-fetched {
+  color: #6e6e73 !important;
+  font-size: 0.85rem;
+}
+
+.status-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Messages */
+.message {
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message.error {
+  background: #ffe5e5;
+  color: #cc0000;
+  border: 1px solid #ffcccc;
+}
+
+.message.success {
+  background: #e5ffe5;
+  color: #006600;
+  border: 1px solid #ccffcc;
+}
+
+.message-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0 0 0 1rem;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.message-close:hover {
+  opacity: 1;
+}
+
+/* Gallery Section */
+.gallery-section {
+  margin-top: 2rem;
+}
+
+.gallery-section h2 {
+  font-size: 1.8rem;
+  color: #1d1d1f;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.no-photos {
+  text-align: center;
+  padding: 3rem;
+  color: #6e6e73;
+  font-size: 1.1rem;
+  background: #f5f5f7;
+  border-radius: 12px;
+}
+
+/* Photo Grid */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.photo-card {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s, box-shadow 0.2s;
+  background: #fff;
+}
+
+.photo-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.photo-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.photo-card:hover img {
+  transform: scale(1.05);
+}
+
+.photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  color: #999;
+  font-size: 0.8rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.photo-placeholder span:first-child {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Lightbox */
+.lightbox {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+  padding: 2rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.lightbox-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  animation: zoomIn 0.3s ease;
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.lightbox-close:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.lightbox-content img {
+  max-width: 100%;
+  max-height: 80vh;
+  display: block;
+}
+
+.lightbox-info {
+  padding: 1rem 1.5rem;
+  background: #1d1d1f;
+  color: white;
+}
+
+.lightbox-info .filename {
+  margin: 0;
+  font-size: 1rem;
+  word-break: break-all;
+}
+
+.lightbox-info .fetched {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: #86868b;
+}
+
+.no-image {
+  padding: 3rem;
+  text-align: center;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .icloud-gallery {
+    padding: 1rem;
+  }
+
+  .gallery-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .config-section {
+    padding: 1.5rem;
+  }
+
+  .config-status {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .status-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .photo-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+
+  .lightbox {
+    padding: 1rem;
+  }
+}

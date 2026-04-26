@@ -1,0 +1,284 @@
+.garden-app {
+  text-align: center;
+  padding: 30px 20px 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 75vh;
+}
+
+.gphase {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 0 20px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.gphase-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  color: white;
+  margin: 0;
+  font-weight: 700;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.gphase-title.success { color: white; }
+.gphase-title.dead    { color: rgba(255,255,255,0.65); }
+
+.gphase-sub {
+  font-family: 'Poppins', sans-serif;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
+  margin: 0;
+  font-weight: 300;
+}
+
+.gphase-sub.warning {
+  color: rgba(255,255,255,0.9);
+  font-weight: 400;
+}
+
+.grow-tagline {
+  font-family: 'Poppins', sans-serif;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1rem;
+  font-style: italic;
+  margin: 0;
+  font-weight: 300;
+  letter-spacing: 0.03em;
+}
+
+/* ── Setup ring ── */
+.setup-ring-wrapper {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 10px auto;
+  cursor: grab;
+}
+
+.setup-ring-wrapper:active { cursor: grabbing; }
+
+.setup-ring-svg {
+  display: block;
+  transform: rotate(-90deg);
+  user-select: none;
+}
+
+.ring-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.ring-minutes {
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+}
+
+.ring-unit {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-top: 5px;
+}
+
+/* ── Forest-app growing scene ── */
+.forest-growing-svg {
+  width: 280px;
+  height: 280px;
+  display: block;
+  margin: 0 auto;
+}
+
+/* ── Complete / Dead scene ── */
+.garden-scene-svg {
+  width: 300px;
+  height: auto;
+  max-width: 95%;
+  display: block;
+  margin: 4px auto;
+  border-radius: 14px;
+  overflow: visible;
+}
+
+/* ── Stats ── */
+.stats-display {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  justify-content: center;
+  margin: 6px 0 4px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.stat-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+}
+
+.stat-label {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 300;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Countdown ── */
+.countdown {
+  font-family: 'Playfair Display', serif;
+  font-size: 4rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  line-height: 1;
+}
+
+/* ── Buttons ── */
+.btn-plant {
+  background: rgba(255,255,255,0.22);
+  color: white;
+  border: 2px solid rgba(255,255,255,0.6);
+  padding: 14px 40px;
+  border-radius: 30px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  backdrop-filter: blur(4px);
+  transition: background 0.15s ease, transform 0.15s ease;
+  margin-top: 4px;
+}
+
+.btn-plant:hover {
+  background: rgba(255,255,255,0.32);
+  transform: translateY(-2px) scale(1.03);
+}
+
+.btn-plant:active { transform: scale(0.97); }
+
+.btn-plant:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-giveup {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 9px 28px;
+  border-radius: 20px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.88rem;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.btn-giveup:hover {
+  color: #ff8f70;
+  border-color: rgba(255, 143, 112, 0.5);
+}
+
+/* ── Forest section ── */
+.forest-section {
+  width: 100%;
+  max-width: 720px;
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: center;
+}
+
+.forest-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 14px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+/* ── Isometric forest view ── */
+.iso-forest-wrap {
+  width: 100%;
+  background: #1a3d1a;
+  border-radius: 18px;
+  padding: 12px 8px 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+}
+
+.iso-forest-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── Forest stats bar ── */
+.forest-stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  font-family: 'Poppins', sans-serif;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.9rem;
+}
+
+.fstat-val {
+  font-weight: 600;
+  color: white;
+  margin-right: 3px;
+}
+
+.fstat-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+}
+
+/* ── Tree SVG (growing phase) ── */
+.tree-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}

@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+body {
+  background: #2d0008; /* Deep red background */
+  margin: 0;
+  font-family: 'Playfair Display', serif; /* Feminine and chic font */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align items to the top */
+  height: 100vh; /* Full viewport height */
+}
+
+.tabs-container {
+  display: flex;
+  gap: 40px; /* Space between tabs */
+  margin-top: 90px; /* Increased spacing from the top */
+  align-items: center; /* Center items horizontally */
+}
+
+.name {
+  background-color: transparent; /* Remove white background */
+  color: #ea75af; /* Soft pink text color */
+  padding: 12px 24px; /* Slightly larger padding for elegance */
+  border-radius: 25px; /* Rounded edges for a chic look */
+  font-size: 22px; /* Larger font for elegance */
+  font-weight: 400; /* Regular weight for a softer appearance */
+  cursor: pointer;
+  text-align: center;
+  transition: color 0.3s ease, transform 0.3s ease;
+  text-decoration: none; /* Removes the underline */
+}
+
+.name:hover {
+  color: #ff007f; /* Electric pink text color on hover */
+  transform: scale(1.1); /* Slight zoom effect on hover */
+  font-weight: bold;
+  margin-bottom: 20px; /* Add spacing below the name */
+}
+
+.tab {
+  background-color: transparent; /* Remove white background */
+  color: #ffffff; /* Soft pink text color */
+  padding: 12px 24px; /* Slightly larger padding for elegance */
+  border-radius: 25px; /* Rounded edges for a chic look */
+  font-size: 22px; /* Larger font for elegance */
+  font-weight: 400; /* Regular weight for a softer appearance */
+  cursor: pointer;
+  text-align: center;
+  transition: color 0.3s ease, transform 0.3s ease;
+  text-decoration: none; /* Removes the underline */
+}
+
+.tab:hover {
+  color: #ff007f; /* Electric pink text color on hover */
+  transform: scale(1.1); /* Slight zoom effect on hover */
+}
+
+.profile-container {
+  display: flex; /* Use flexbox to align items horizontally */
+  align-items: center; /* Vertically center the items */
+  margin-top: 50px; /* Add spacing above the container */
+}
+
+.profile-picture {
+  margin-right: 50px; /* Add spacing between the profile picture and the text box */
+}
+
+.profile-picture img {
+  border-radius: 50%; /* Circular profile picture */
+  width: 300px; /* Adjusted width */
+  height: 300px; /* Adjusted height */
+  object-fit: cover; /* Ensures the image fits within the circle */
+}
+
+
+.text-box {
+  font-family: 'Poppins', sans-serif; /* Chic and modern font */
+  border: none; /* Remove the border */
+  padding: 12px; /* Padding inside the text box */
+  font-size: 16px; /* Font size for the text */
+  width: 500px; /* Fixed width for the text box */
+  height: 300px; /* Fixed height for the text box */
+  background-color: transparent; /* Remove the white background */
+  color: #ffffff; /* Text color */
+  border-radius: 10px; /* Rounded corners (optional, won't be visible without a border) */
+  line-height: 1.8; /* Increase line spacing for better readability */
+}
+
+.fade-emoji {
+  transition: opacity 0.5s ease-in-out;
+  font-size: 2em; /* Adjust size as needed */
+}
+
+.fade-in {
+  opacity: 1;
+}
+
+.fade-out {
+  opacity: 0;
+}
+
+.emoji-container {
+  display: flex;
+  justify-content: left;
+  gap: 10px; /* Space between emojis */
+}
+
+.garden-page {
+  background-color: #52b788;
+  color: #ffffff;
+  text-align: center;
+  min-height: calc(100vh - 130px);
+}
