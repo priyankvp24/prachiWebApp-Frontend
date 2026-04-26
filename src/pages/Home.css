@@ -12,11 +12,27 @@
   padding: 20px;
 }
 
+.monkey-gif {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
 .pretty-lady {
   height: 300px;
   width: 300px;
   object-fit: cover;
   border-radius: 50%;
+}
+
+.welcome-text {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .right-panel {
@@ -30,6 +46,7 @@
 .emoji-display {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
   margin-bottom: 20px;
 }

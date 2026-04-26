@@ -178,6 +178,8 @@ const Home = () => {
       </div>
       <div className="right-panel">
         <div className="emoji-display">
+          <img src="/monkeypls.gif" alt="monkey" className="monkey-gif" />
+          <span className="welcome-text">WELCOME!</span>
           {displayedEmojis.map((item) => (
             <span key={item.key} className={`emoji-item ${item.visible ? "visible" : "hidden"}`}>
               {item.emoji}

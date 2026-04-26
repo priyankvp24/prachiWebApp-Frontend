@@ -11,7 +11,7 @@ function Main() {
   return (
     <Router>
       <div className="tabs-container">
-        <Link to="/" className="name">Jane Doe</Link>
+        <Link to="/" className="name">Prachi Pati</Link>
         <Link to="/garden" className="tab">🌸 Garden</Link>
         <Link to="/todo" className="tab">🗒️ To-Do</Link>
         <Link to="/schedule" className="tab">📅 Schedule</Link>
