@@ -17,7 +17,7 @@ const categoryKeys = Object.keys(categories);
 
 const GRID_SIZE = 12;
 const FADE_MS = 1200;
-const API_URL = "";
+const API_URL = process.env.REACT_APP_API_URL || "";
 const SYNC_INTERVAL = 30000;
 
 const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];

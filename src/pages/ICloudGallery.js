@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './ICloudGallery.css';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = `${process.env.REACT_APP_API_URL || ''}/api`;
 
 const ICloudGallery = () => {
   const [albumUrl, setAlbumUrl] = useState('');
