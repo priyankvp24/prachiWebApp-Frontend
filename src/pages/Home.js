@@ -32,6 +32,8 @@ const Home = () => {
   const emojisRef = useRef(displayedEmojis);
   emojisRef.current = displayedEmojis;
 
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
+
   const [allPhotos, setAllPhotos] = useState([]);
   const allPhotosRef = useRef([]);
   allPhotosRef.current = allPhotos;
@@ -190,6 +192,7 @@ const Home = () => {
               <div
                 key={item.key}
                 className={`photo-container ${item.visible ? "visible" : "hidden"}`}
+                onClick={() => item.visible && setSelectedPhoto(item.src)}
               >
                 <img src={item.src} alt="" className="grid-photo" />
               </div>
@@ -197,6 +200,17 @@ const Home = () => {
           )}
         </div>
       </div>
+
+      {selectedPhoto && (
+        <div className="photo-modal-overlay" onClick={() => setSelectedPhoto(null)}>
+          <div className="photo-modal-content" onClick={(e) => e.stopPropagation()}>
+            <img src={selectedPhoto} alt="" className="photo-modal-img" />
+            <button className="photo-modal-close" onClick={() => setSelectedPhoto(null)}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
