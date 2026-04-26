@@ -407,10 +407,15 @@ function GardenApp() {
 
   useEffect(() => {
     if (phase !== PHASE.GROWING) return;
-    const onVis = () => { if (document.hidden) setPhase(PHASE.DEAD); };
+    const onVis = () => { if (document.hidden) killTree(); };
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
   }, [phase]);
+
+  const killTree = () => {
+    setPhase(PHASE.DEAD);
+    fetch('/api/notify/tree-died', { method: 'POST' }).catch(() => {});
+  };
 
   const startSession = () => {
     if (selectedTime < 1) return;
@@ -466,7 +471,7 @@ function GardenApp() {
           <p className="grow-tagline">Put down your phone.</p>
           <ForestGrowingScene progress={progress} />
           <div className="countdown">{fmt(timeLeft)}</div>
-          <button className="btn-giveup" onClick={() => setPhase(PHASE.DEAD)}>Give Up</button>
+          <button className="btn-giveup" onClick={killTree}>Give Up</button>
         </div>
       )}
 
