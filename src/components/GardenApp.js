@@ -4,300 +4,166 @@ import './GardenApp.css';
 const PHASE = { SETUP: 'setup', GROWING: 'growing', COMPLETE: 'complete', DEAD: 'dead' };
 const GROW_C = 2 * Math.PI * 128;
 
-// ── Isometric grid ─────────────────────────────────────────────────────────────
-const ISO_POSITIONS = [
-  [2,1],[3,1],[2,2],[3,2],[1,1],[4,1],
-  [1,2],[4,2],[2,0],[3,0],[0,1],[5,1],
-  [0,2],[5,2],[1,0],[4,0],[0,0],[5,0],
-  [2,3],[3,3],[1,3],[4,3],[0,3],[5,3],
+const TIME_FILTERS = [
+  { key: '7d',   label: 'Week',     ms: 7   * 86400000 },
+  { key: '14d',  label: '2 Weeks',  ms: 14  * 86400000 },
+  { key: '30d',  label: 'Month',    ms: 30  * 86400000 },
+  { key: '180d', label: '6 Months', ms: 180 * 86400000 },
+  { key: '365d', label: 'Year',     ms: 365 * 86400000 },
+  { key: 'all',  label: 'All Time', ms: null },
 ];
-// DX=40, DY=20 — wide enough so trees fit within cells without heavy overlap
-const isoXY = (col, row) => ({
-  x: 310 + (col - row) * 40,
-  y: 100 + (col + row + 1) * 20,
-});
+
+// ── Isometric grid ─────────────────────────────────────────────────────────────
+const DX = 40, DY = 20;
+// N apex is always fixed so the forest feels anchored at the top-center
+const GRID_OX = 310, GRID_OY = 100;
+
 const sr = (seed, mod) => ((seed * 1664525 + 1013904223) >>> 0) % mod;
 
-// ── Shared helpers ─────────────────────────────────────────────────────────────
-const PETAL = ['#ff8fab','#c77dff','#ffd166','#84c5f4','#ff9f1c','#f4a261','#a8e6cf','#ffb3c6'];
+// Compute platform corners + fill positions for `count` trees.
+// Both COLS and ROWS grow together (≈√count) so the diamond expands in all
+// four isometric directions equally — not just downward.
+function buildForestLayout(count) {
+  const SIDE = Math.max(5, Math.ceil(Math.sqrt(count + 1)));
+  const COLS = SIDE, ROWS = SIDE;
+  const OX = GRID_OX, OY = GRID_OY;
 
-// A single petal-based flower
-function Blossom({ cx, cy, pr, ci, seed, n = 5, rot = 0 }) {
-  const pc = PETAL[ci % PETAL.length];
-  return (
-    <g>
-      {Array.from({ length: n }, (_, i) => {
-        const a  = (i / n) * Math.PI * 2 + rot;
-        const px = cx + Math.cos(a) * pr * 1.6;
-        const py = cy + Math.sin(a) * pr * 1.6;
-        return (
-          <ellipse key={i} cx={px} cy={py}
-            rx={pr * 1.0} ry={pr * 0.55}
-            fill={pc}
-            transform={`rotate(${(a*180/Math.PI)+90},${px},${py})`}
-            opacity="0.95"
-          />
-        );
-      })}
-      <circle cx={cx} cy={cy} r={pr * 0.85} fill="#ffe066" />
-      <circle cx={cx} cy={cy} r={pr * 0.42} fill="#d4a020" opacity="0.9" />
-    </g>
-  );
+  const isoPos = (col, row) => ({
+    x: OX + (col - row) * DX,
+    y: OY + (col + row + 1) * DY,
+  });
+
+  // Platform diamond corners — symmetric when COLS === ROWS
+  const N = { x: OX,                      y: OY };
+  const E = { x: OX + COLS * DX,          y: OY + COLS * DY };
+  const S = { x: OX,                      y: OY + (COLS + ROWS) * DY }; // COLS-ROWS=0
+  const W = { x: OX - ROWS * DX,          y: OY + ROWS * DY };
+
+  // Fill from grid center outward so early trees land in the prime center spots
+  const allPos = [];
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      allPos.push([c, r]);
+  const cC = (COLS - 1) / 2, rC = (ROWS - 1) / 2;
+  allPos.sort((a, b) => {
+    const da = (a[0] - cC) ** 2 + (a[1] - rC) ** 2;
+    const db = (b[0] - cC) ** 2 + (b[1] - rC) ** 2;
+    return da - db;
+  });
+
+  // ViewBox: 100 px padding each side, platform always centered at x=310
+  const PAD = 100;
+  const vbX = W.x - PAD;
+  const vbW = (E.x - W.x) + 2 * PAD;
+  const vbH = S.y + 80;
+
+  return { COLS, ROWS, isoPos, N, E, S, W, positions: allPos, vbX, vbW, vbH };
 }
 
 // ── Platform ──────────────────────────────────────────────────────────────────
-function Platform() {
+function Platform({ N, E, S, W }) {
+  const D = 40; // dirt wall depth
+  const pt = (pts) => pts.map(([x, y]) => `${x},${y}`).join(' ');
   return (
     <g>
-      {/* Left dirt wall — W(150,180) S(390,300) */}
-      <polygon points="150,180 390,300 390,340 150,220" fill="#a07828" />
-      <polygon points="150,180 390,300 390,330 150,210" fill="#c09040" />
-      <polygon points="150,180 390,300 390,320 150,200" fill="#d8a852" />
-      {/* Right dirt wall — S(390,300) E(550,220) */}
-      <polygon points="390,300 550,220 550,260 390,340" fill="#785018" />
-      <polygon points="390,300 550,220 550,250 390,330" fill="#8c6028" />
-      {/* Grass top face — N(310,100) E(550,220) S(390,300) W(150,180) */}
-      <polygon points="310,100 550,220 390,300 150,180" fill="#5ec244" />
-      {/* Ridge highlight edges */}
-      <polyline points="310,100 550,220" fill="none" stroke="#78d858" strokeWidth="3.5" opacity="0.7" />
-      <polyline points="310,100 150,180" fill="none" stroke="#78d858" strokeWidth="3.5" opacity="0.7" />
-      {/* Inner lighter patch */}
-      <polygon points="310,100 390,140 350,180 270,140" fill="#6ed04a" opacity="0.25" />
-      {/* Grass shadow edges */}
-      <polyline points="150,180 390,300" fill="none" stroke="#44a02c" strokeWidth="1.5" opacity="0.4" />
-      <polyline points="390,300 550,220" fill="none" stroke="#44a02c" strokeWidth="1.5" opacity="0.4" />
+      {/* Left dirt wall */}
+      <polygon points={pt([[W.x,W.y],[S.x,S.y],[S.x,S.y+D],[W.x,W.y+D]])} fill="#a07828" />
+      <polygon points={pt([[W.x,W.y],[S.x,S.y],[S.x,S.y+D-10],[W.x,W.y+D-10]])} fill="#c09040" />
+      <polygon points={pt([[W.x,W.y],[S.x,S.y],[S.x,S.y+D-20],[W.x,W.y+D-20]])} fill="#d8a852" />
+      {/* Right dirt wall */}
+      <polygon points={pt([[S.x,S.y],[E.x,E.y],[E.x,E.y+D],[S.x,S.y+D]])} fill="#785018" />
+      <polygon points={pt([[S.x,S.y],[E.x,E.y],[E.x,E.y+D-10],[S.x,S.y+D-10]])} fill="#8c6028" />
+      {/* Grass top face */}
+      <polygon points={pt([[N.x,N.y],[E.x,E.y],[S.x,S.y],[W.x,W.y]])} fill="#5ec244" />
+      {/* Highlight edges */}
+      <polyline points={pt([[N.x,N.y],[E.x,E.y]])} fill="none" stroke="#78d858" strokeWidth="3.5" opacity="0.7" />
+      <polyline points={pt([[N.x,N.y],[W.x,W.y]])} fill="none" stroke="#78d858" strokeWidth="3.5" opacity="0.7" />
+      {/* Inner lighter patch (quarter-diamond highlight) */}
+      <polygon points={pt([[N.x,N.y],[(N.x+E.x)/2,(N.y+E.y)/2],[(N.x+S.x)/2,(N.y+S.y)/2],[(N.x+W.x)/2,(N.y+W.y)/2]])} fill="#6ed04a" opacity="0.25" />
+      {/* Shadow edges */}
+      <polyline points={pt([[W.x,W.y],[S.x,S.y]])} fill="none" stroke="#44a02c" strokeWidth="1.5" opacity="0.4" />
+      <polyline points={pt([[S.x,S.y],[E.x,E.y]])} fill="none" stroke="#44a02c" strokeWidth="1.5" opacity="0.4" />
     </g>
   );
 }
 
-// ── 1. TallPine — dark pine, 4 overlapping tiers, total ~66px ────────────────
-function TallPine({ x, y, seed }) {
-  // tiers: [apex_y, base_y, halfWidth, fillColor, lightColor]
-  // Trees grow upward from y=0 (negative = up in SVG)
-  const TRUNK_H = 10;
-  const tiers = [
-    [-66, -48, 21, '#155018', '#1c6422'],   // tip tier
-    [-54, -34, 17, '#1c6422', '#267a2c'],
-    [-42, -18, 20, '#267a2c', '#349438'],
-    [-28,  -TRUNK_H, 22, '#349438', '#44aa44'],  // bottom tier rests on trunk top
-  ];
+// ── OakTree — scales from sapling to full oak based on minutes ────────────────
+function OakTree({ x, y, minutes, seed }) {
+  const sc = 0.6 + Math.min(minutes, 60) / 60 * 0.8; // 0.6 (sapling) → 1.4 (full grown)
+  const R  = 18 * sc;
+  const TH = 10 * sc;
+  const TW = 5.5 * sc;
+  const [c1, c2, c3] = minutes >= 40
+    ? ['#173d1a', '#215224', '#2d6a30']
+    : minutes >= 15
+    ? ['#1e5220', '#2a6e2c', '#388838']
+    : ['#257228', '#348234', '#44a044'];
   return (
     <g transform={`translate(${x},${y})`}>
-      <ellipse cx="7" cy="5" rx="16" ry="6" fill="rgba(0,0,0,0.20)" />
-      <rect x="-3" y={-TRUNK_H} width="6" height={TRUNK_H} rx="2" fill="#8B5E2A" />
-      <rect x="-1" y={-TRUNK_H} width="2" height={TRUNK_H} rx="1" fill="#A87040" opacity="0.5" />
-      {/* Draw bottom tier first, tip last (painter's order) */}
-      {[...tiers].reverse().map(([ay, by, hw, fill, lightFill], i) => (
-        <g key={i}>
-          {/* Full triangle */}
-          <polygon points={`0,${ay} ${-hw},${by} ${hw},${by}`} fill={fill} />
-          {/* Left-face lighter overlay (simulates light from upper-left) */}
-          <polygon points={`0,${ay} ${-hw},${by} 0,${by}`} fill={lightFill} opacity="0.55" />
-          {/* Crisp bottom edge */}
-          <line x1={-hw} y1={by} x2={hw} y2={by} stroke={fill} strokeWidth="0.8" opacity="0.6" />
-        </g>
-      ))}
+      <ellipse cx={R*0.35} cy={R*0.22} rx={R*0.88} ry={R*0.34} fill="rgba(0,0,0,0.22)" />
+      <rect x={-TW/2} y={-TH} width={TW} height={TH+1} rx={TW*0.35} fill="#6b4220" />
+      <rect x={-TW*0.12} y={-TH} width={TW*0.28} height={TH} rx={TW*0.12} fill="#8a5c30" opacity="0.5" />
+      {/* Crown — overlapping circles forming irregular wide oak canopy */}
+      <circle cx={ 0}       cy={-TH-R*0.55} r={R}       fill={c1} />
+      <circle cx={-R*0.80}  cy={-TH-R*0.25} r={R*0.82}  fill={c1} />
+      <circle cx={ R*0.75}  cy={-TH-R*0.22} r={R*0.78}  fill={c1} />
+      <circle cx={-R*0.42}  cy={-TH-R*1.10} r={R*0.74}  fill={c2} />
+      <circle cx={ R*0.38}  cy={-TH-R*1.08} r={R*0.70}  fill={c2} />
+      <circle cx={ 0}       cy={-TH-R*1.32} r={R*0.58}  fill={c3} />
+      <circle cx={-R*0.18}  cy={-TH-R*0.75} r={R*0.65}  fill={c3} />
+      <ellipse cx={-R*0.28} cy={-TH-R*1.15} rx={R*0.24} ry={R*0.17}
+        fill="white" opacity="0.12" transform={`rotate(-30,${-R*0.28},${-TH-R*1.15})`} />
     </g>
   );
 }
 
-// ── 2. MedPine — brighter/lighter pine, same 4-tier structure, ~62px ─────────
-function MedPine({ x, y, seed }) {
-  const TRUNK_H = 9;
-  const tiers = [
-    [-62, -45, 20, '#226624', '#2e8030'],
-    [-50, -31, 16, '#2e8030', '#3a9c3e'],
-    [-39, -17, 19, '#3a9c3e', '#4ab44e'],
-    [-26, -TRUNK_H, 21, '#4ab44e', '#5cc85e'],
-  ];
+// ── DeadIsoTree — bare oak skeleton for abandoned sessions ────────────────────
+function DeadIsoTree({ x, y, seed }) {
+  const lean = (sr(seed, 7) - 3) * 0.8;
   return (
     <g transform={`translate(${x},${y})`}>
-      <ellipse cx="7" cy="5" rx="15" ry="5.5" fill="rgba(0,0,0,0.18)" />
-      <rect x="-3.5" y={-TRUNK_H} width="7" height={TRUNK_H} rx="2" fill="#8B5E2A" />
-      <rect x="-1.2" y={-TRUNK_H} width="2" height={TRUNK_H} rx="1" fill="#A87040" opacity="0.45" />
-      {[...tiers].reverse().map(([ay, by, hw, fill, lightFill], i) => (
-        <g key={i}>
-          <polygon points={`0,${ay} ${-hw},${by} ${hw},${by}`} fill={fill} />
-          <polygon points={`0,${ay} ${-hw},${by} 0,${by}`} fill={lightFill} opacity="0.50" />
-          <line x1={-hw} y1={by} x2={hw} y2={by} stroke={fill} strokeWidth="0.7" opacity="0.5" />
-        </g>
-      ))}
+      <ellipse cx="5" cy="3" rx="9" ry="3.5" fill="rgba(0,0,0,0.15)" />
+      <line x1="0" y1="0" x2={lean} y2="-38" stroke="#3a2010" strokeWidth="4.5" strokeLinecap="round" />
+      <line x1={lean*0.55} y1="-22" x2={lean*0.55-13} y2="-34" stroke="#3a2010" strokeWidth="3" strokeLinecap="round" />
+      <line x1={lean*0.55} y1="-22" x2={lean*0.55+11} y2="-32" stroke="#3a2010" strokeWidth="3" strokeLinecap="round" />
+      <line x1={lean*0.80} y1="-31" x2={lean*0.80-8}  y2="-42" stroke="#3a2010" strokeWidth="2" strokeLinecap="round" />
+      <line x1={lean*0.80} y1="-31" x2={lean*0.80+7}  y2="-40" stroke="#3a2010" strokeWidth="2" strokeLinecap="round" />
+      <line x1={lean*0.55-13} y1="-34" x2={lean*0.55-16} y2="-40" stroke="#3a2010" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1={lean*0.55+11} y1="-32" x2={lean*0.55+14} y2="-38" stroke="#3a2010" strokeWidth="1.5" strokeLinecap="round" />
     </g>
   );
 }
 
-// ── 3. RoundTree — dome canopy with scattered berries & flowers, ~64px ────────
-function RoundTree({ x, y, seed }) {
-  const gid = `rt${seed}`;
-  const ci  = sr(seed, PETAL.length);
-  const R   = 17;
-  const TH  = 8;
-  const CY  = -(TH + R);
-  const rot = (sr(seed, 120)) * Math.PI / 60;
-  const berryColor = PETAL[sr(seed, PETAL.length)];
-  // Berries clustered on the lit (upper-left) side
-  const berries = [
-    [-R*0.50, CY - R*0.30], [-R*0.20, CY - R*0.58],
-    [-R*0.68, CY + R*0.08], [ R*0.28, CY - R*0.48],
-    [ R*0.44, CY - R*0.15], [-R*0.10, CY - R*0.72],
-  ];
-
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <defs>
-        {/* Radial gradient: focal point upper-left (lit), darkens toward lower-right (shadow) */}
-        <radialGradient id={gid} gradientUnits="userSpaceOnUse"
-          cx={-R*0.28} cy={CY - R*0.38} r={R*1.35}
-          fx={-R*0.42} fy={CY - R*0.54}>
-          <stop offset="0%"   stopColor="#8ee05a" />
-          <stop offset="25%"  stopColor="#42a83e" />
-          <stop offset="60%"  stopColor="#1e6820" />
-          <stop offset="100%" stopColor="#0b2e0e" />
-        </radialGradient>
-      </defs>
-      <ellipse cx="6" cy="4" rx="14" ry="5" fill="rgba(0,0,0,0.22)" />
-      <rect x="-3.5" y={-TH} width="7" height={TH} rx="2" fill="#8B5E2A" />
-      <rect x="-1.2" y={-TH} width="2.5" height={TH} rx="1" fill="#A87040" opacity="0.45" />
-      {/* Single sphere with realistic gradient */}
-      <circle cx="0" cy={CY} r={R} fill={`url(#${gid})`} />
-      {/* Soft specular highlight */}
-      <ellipse cx={-R*0.32} cy={CY - R*0.42} rx={R*0.22} ry={R*0.15}
-        fill="white" opacity="0.18"
-        transform={`rotate(-35,${-R*0.32},${CY - R*0.42})`} />
-      {berries.map(([bx, by], i) => (
-        <circle key={i} cx={bx} cy={by} r="2.0" fill={berryColor} opacity="0.88" />
-      ))}
-      <Blossom cx={R*0.08} cy={CY - R*0.72} pr={3.2} ci={ci} seed={seed} n={5} rot={rot} />
-    </g>
-  );
-}
-
-// ── 4. FlowerBush — compact dome, dominant petal flowers, ~60px ──────────────
-function FlowerBush({ x, y, seed }) {
-  const ci  = sr(seed, PETAL.length);
-  const ci2 = (ci + 3) % PETAL.length;
-  const R   = 15;
-  const TH  = 5;
-  const CY  = -(TH + R);
-  const rot = (sr(seed, 100)) * Math.PI / 50;
-
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <ellipse cx="5" cy="3" rx="12" ry="4.5" fill="rgba(0,0,0,0.18)" />
-      <rect x="-2.5" y={-TH} width="5" height={TH} rx="1.5" fill="#8B5E2A" />
-      {/* Dome */}
-      <circle cx="0"       cy={CY}          r={R}       fill="#1a6e1e" />
-      <circle cx={-R*0.45} cy={CY - R*0.20} r={R*0.80}  fill="#268228" />
-      <circle cx={ R*0.38} cy={CY - R*0.16} r={R*0.72}  fill="#248024" />
-      <circle cx={-R*0.12} cy={CY - R*0.48} r={R*0.58}  fill="#349838" />
-      <circle cx={ R*0.08} cy={CY - R*0.58} r={R*0.40}  fill="#44ae48" />
-      <circle cx={-R*0.55} cy={CY - R*0.26} r={R*0.24}  fill="#58c05c" opacity="0.42" />
-      {/* Blossoms — large and prominent */}
-      <Blossom cx={-R*0.72} cy={CY - R*0.10} pr={3.0} ci={ci}  seed={seed}   n={5} rot={rot} />
-      <Blossom cx={ R*0.68} cy={CY - R*0.30} pr={2.8} ci={ci2} seed={seed+1} n={5} rot={rot+1.3} />
-      <Blossom cx={-R*0.15} cy={CY - R*0.75} pr={2.7} ci={ci}  seed={seed+2} n={6} rot={rot+0.6} />
-      <Blossom cx={ R*0.48} cy={CY + R*0.10} pr={2.4} ci={ci2} seed={seed+3} n={5} rot={rot+2.0} />
-    </g>
-  );
-}
-
-// ── 5. SmallBush — small but NOT tiny, ~55px with flowers ────────────────────
-function SmallBush({ x, y, seed }) {
-  const ci  = sr(seed, PETAL.length);
-  const ci2 = (ci + 2) % PETAL.length;
-  const R   = 13;
-  const TH  = 3;
-  const CY  = -(TH + R);
-  const rot = (sr(seed, 80)) * Math.PI / 40;
-
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <ellipse cx="4" cy="3" rx="10" ry="4" fill="rgba(0,0,0,0.17)" />
-      <rect x="-2" y={-TH} width="4" height={TH} rx="1.2" fill="#8B5E2A" />
-      {/* Dome */}
-      <circle cx="0"       cy={CY}          r={R}       fill="#1e7022" />
-      <circle cx={-R*0.44} cy={CY - R*0.20} r={R*0.78}  fill="#288c2c" />
-      <circle cx={ R*0.36} cy={CY - R*0.16} r={R*0.70}  fill="#248428" />
-      <circle cx={-R*0.10} cy={CY - R*0.48} r={R*0.55}  fill="#349c38" />
-      <circle cx={-R*0.55} cy={CY - R*0.25} r={R*0.22}  fill="#50c054" opacity="0.40" />
-      {/* Blossoms */}
-      <Blossom cx={-R*0.70} cy={CY - R*0.08} pr={2.6} ci={ci}  seed={seed}   n={5} rot={rot} />
-      <Blossom cx={ R*0.65} cy={CY - R*0.28} pr={2.4} ci={ci2} seed={seed+1} n={5} rot={rot+1.1} />
-      <Blossom cx={-R*0.08} cy={CY - R*0.72} pr={2.2} ci={ci}  seed={seed+2} n={5} rot={rot+0.5} />
-    </g>
-  );
-}
-
-function IsoTree({ x, y, minutes, seed }) {
-  if (minutes >= 50) return <TallPine   x={x} y={y} seed={seed} />;
-  if (minutes >= 25) return <MedPine    x={x} y={y} seed={seed} />;
-  if (minutes >= 10) return <RoundTree  x={x} y={y} seed={seed} />;
-  if (minutes >= 4)  return <FlowerBush x={x} y={y} seed={seed} />;
-  return                    <SmallBush  x={x} y={y} seed={seed} />;
-}
-
-// ── Ground flowers ─────────────────────────────────────────────────────────────
-function GroundFlowers({ count }) {
-  if (count < 4) return null;
-  const spots = [
-    [1.5,1.6],[3.6,0.5],[0.5,2.4],[4.6,2.5],[2.5,3.5],[0.8,0.8],
-  ].slice(0, Math.min(count - 3, 6));
-  return (
-    <>
-      {spots.map(([col, row], i) => {
-        const { x, y } = isoXY(col, row);
-        return (
-          <g key={i} transform={`translate(${x},${y})`}>
-            <line x1="0" y1="0" x2="-1" y2="-10" stroke="#3a9c3a" strokeWidth="1.6" strokeLinecap="round" />
-            <Blossom cx={-1} cy={-14} pr={3.0} ci={i % PETAL.length} seed={i*113} n={5} rot={i*0.9} />
-          </g>
-        );
-      })}
-    </>
-  );
+function IsoTree({ x, y, minutes, seed, dead }) {
+  if (dead) return <DeadIsoTree x={x} y={y} seed={seed} />;
+  return <OakTree x={x} y={y} minutes={minutes} seed={seed} />;
 }
 
 // ── Isometric forest ──────────────────────────────────────────────────────────
 function IsometricForest({ forest }) {
+  const { positions, isoPos, N, E, S, W, vbX, vbW, vbH } = buildForestLayout(forest.length);
+
   const items = forest
-    .slice(0, ISO_POSITIONS.length)
     .map((tree, i) => {
-      const [col, row] = ISO_POSITIONS[i];
-      const base = isoXY(col, row);
-      // Seeded jitter so each tree sits naturally off-center in its cell
-      const jx = (sr(tree.id, 25) - 12);          // –12 … +12 px
-      const jy = (sr(tree.id * 7, 13) - 6);        // –6  … +6  px
+      const [col, row] = positions[i];
+      const base = isoPos(col, row);
+      const jx = (sr(tree.id, 25) - 12);   // –12 … +12 px natural scatter
+      const jy = (sr(tree.id * 7, 13) - 6); // –6  … +6  px
       return { tree, col, row, x: base.x + jx, y: base.y + jy };
     })
-    .sort((a, b) => (a.col + a.row) - (b.col + b.row));
+    .sort((a, b) => (a.col + a.row) - (b.col + b.row)); // painter's order
 
   return (
-    <svg viewBox="0 0 700 360" className="iso-forest-svg">
-      <Platform />
-      <GroundFlowers count={forest.length} />
+    <svg viewBox={`${vbX} 0 ${vbW} ${vbH}`} className="iso-forest-svg">
+      <Platform N={N} E={E} S={S} W={W} />
       {items.map(({ tree, x, y }) => (
-        <IsoTree key={tree.id} x={x} y={y} minutes={tree.minutes} seed={tree.id} />
+        <IsoTree key={tree.id} x={x} y={y} minutes={tree.minutes} seed={tree.id} dead={tree.dead} />
       ))}
     </svg>
   );
 }
 
-// ── Demo forest — one of each type, spread across the platform ────────────────
-const DEMO_FOREST = [
-  { id: 10001, minutes: 65 },   // TallPine    → pos [2,1]
-  { id: 10002, minutes: 60 },   // TallPine    → pos [3,1]
-  { id: 10003, minutes: 38 },   // MedPine     → pos [2,2]
-  { id: 10004, minutes: 30 },   // MedPine     → pos [3,2]
-  { id: 10005, minutes: 20 },   // RoundTree   → pos [1,1]
-  { id: 10006, minutes: 15 },   // RoundTree   → pos [4,1]
-  { id: 10007, minutes: 12 },   // RoundTree   → pos [1,2]
-  { id: 10008, minutes: 8  },   // FlowerBush  → pos [4,2]
-  { id: 10009, minutes: 6  },   // FlowerBush  → pos [2,0]
-  { id: 10010, minutes: 3  },   // SmallBush   → pos [3,0]
-  { id: 10011, minutes: 2  },   // SmallBush   → pos [0,1]
-];
-
-// ── Other scenes (unchanged) ──────────────────────────────────────────────────
+// ── Other scenes ─────────────────────────────────────────────────────────────
 function ForestGrowingScene({ progress }) {
   const isSeedling = progress < 0.12;
   const sp = isSeedling ? progress / 0.12 : 1;
@@ -380,9 +246,11 @@ function GardenApp() {
     try { return JSON.parse(localStorage.getItem('garden_forest') || '[]'); }
     catch { return []; }
   });
+  const [timeFilter, setTimeFilter]     = useState('all');
   const circleRef    = useRef(null);
   const totalTimeRef = useRef(0);
-  const SETUP_R = 80;
+  const timeLeftRef  = useRef(0);
+  const SETUP_R = 90;
   const SETUP_C = 2 * Math.PI * SETUP_R;
 
   const progress = totalTimeRef.current > 0
@@ -405,6 +273,8 @@ function GardenApp() {
     setPhase(PHASE.COMPLETE);
   }, [phase, timeLeft]);
 
+  useEffect(() => { timeLeftRef.current = timeLeft; }, [timeLeft]);
+
   useEffect(() => {
     if (phase !== PHASE.GROWING) return;
     const onVis = () => { if (document.hidden) killTree(); };
@@ -413,6 +283,13 @@ function GardenApp() {
   }, [phase]);
 
   const killTree = () => {
+    const elapsedMinutes = Math.max(0, Math.round((totalTimeRef.current - timeLeftRef.current) / 60));
+    const deadTree = { id: Date.now(), minutes: elapsedMinutes, dead: true };
+    setForest(prev => {
+      const updated = [...prev, deadTree];
+      localStorage.setItem('garden_forest', JSON.stringify(updated));
+      return updated;
+    });
     setPhase(PHASE.DEAD);
     fetch('/api/notify/tree-died', { method: 'POST' }).catch(() => {});
   };
@@ -435,29 +312,48 @@ function GardenApp() {
   const handleMouseMove = (e) => { if (isDragging) updateTime(e.clientX, e.clientY); };
   const handleMouseUp   = () => setIsDragging(false);
 
+  const handleTouchStart = (e) => { e.preventDefault(); setIsDragging(true); updateTime(e.touches[0].clientX, e.touches[0].clientY); };
+  const handleTouchMove  = (e) => { e.preventDefault(); if (isDragging) updateTime(e.touches[0].clientX, e.touches[0].clientY); };
+  const handleTouchEnd   = () => setIsDragging(false);
+
   const setupProgress = (selectedTime / 120) * SETUP_C;
   const indAngle = (selectedTime / 120) * 2 * Math.PI;
-  const indX = 100 + SETUP_R * Math.cos(indAngle);
-  const indY = 100 + SETUP_R * Math.sin(indAngle);
+  const indX = 110 + SETUP_R * Math.cos(indAngle);
+  const indY = 110 + SETUP_R * Math.sin(indAngle);
   const fmt  = (s) => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
   const totalMinutes = forest.reduce((s, t) => s + t.minutes, 0);
 
+  const activeDef      = TIME_FILTERS.find(f => f.key === timeFilter);
+  const cutoff         = activeDef.ms ? Date.now() - activeDef.ms : 0;
+  const filteredForest = forest.filter(t => t.id >= cutoff);
+  const filteredMins   = filteredForest.reduce((s, t) => s + t.minutes, 0);
+  const filteredLive   = filteredForest.filter(t => !t.dead).length;
+  const filteredDead   = filteredForest.filter(t =>  t.dead).length;
+
   return (
-    <div className="garden-app" onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
+    <div className="garden-app" onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
 
       {phase === PHASE.SETUP && (
         <div className="gphase">
           <h2 className="gphase-title">Plant a Tree</h2>
           <p className="gphase-sub">Drag to set your focus time</p>
           <div className="setup-ring-wrapper">
-            <svg ref={circleRef} className="setup-ring-svg" width="200" height="200" onMouseDown={handleMouseDown}>
-              <circle cx="100" cy="100" r={SETUP_R} fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="12" />
-              <circle cx="100" cy="100" r={SETUP_R} fill="none" stroke="white" strokeWidth="12"
+            <svg ref={circleRef} className="setup-ring-svg" width="220" height="220"
+              onMouseDown={handleMouseDown}
+              onTouchStart={handleTouchStart}>
+              <circle cx="110" cy="110" r={SETUP_R} fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="12" />
+              <circle cx="110" cy="110" r={SETUP_R} fill="none" stroke="white" strokeWidth="12"
                 strokeLinecap="round" strokeDasharray={SETUP_C} strokeDashoffset={SETUP_C - setupProgress}
                 style={{ transition: isDragging ? 'none' : 'stroke-dashoffset 0.1s' }} />
               <circle cx={indX} cy={indY} r="9" fill="white" stroke="#40916c" strokeWidth="2" style={{ cursor: 'grab' }} />
             </svg>
             <div className="ring-label">
+              <svg width="100" height="95" viewBox="-50 -78 100 95" style={{ overflow: 'visible', display: 'block' }}>
+                {selectedTime > 0
+                  ? <OakTree x={0} y={0} minutes={selectedTime} seed={42} />
+                  : <text x="0" y="-20" textAnchor="middle" fontSize="11" fill="rgba(255,255,255,0.45)" fontFamily="'Poppins',sans-serif">drag to set</text>
+                }
+              </svg>
               <span className="ring-minutes">{selectedTime}</span>
               <span className="ring-unit">min</span>
             </div>
@@ -504,28 +400,46 @@ function GardenApp() {
         </div>
       )}
 
-      {/* Tree gallery — always visible */}
       <div className="forest-section">
-        <h3 className="forest-title">Tree Gallery</h3>
-        <div className="iso-forest-wrap">
-          <IsometricForest forest={DEMO_FOREST} />
-        </div>
-      </div>
+        <h3 className="forest-title">My Forest</h3>
+        {forest.length === 0 ? (
+          <p className="forest-empty">No trees yet — complete a session to grow your first oak.</p>
+        ) : (
+          <>
+            <div className="forest-filter-bar">
+              {TIME_FILTERS.map(f => (
+                <button
+                  key={f.key}
+                  className={`filter-pill${timeFilter === f.key ? ' active' : ''}`}
+                  onClick={() => setTimeFilter(f.key)}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
 
-      {/* Real forest */}
-      {forest.length > 0 && (
-        <div className="forest-section">
-          <h3 className="forest-title">My Forest</h3>
-          <div className="iso-forest-wrap">
-            <IsometricForest forest={forest} />
-          </div>
-          <div className="forest-stats-bar">
-            <span className="fstat"><span className="fstat-val">{totalMinutes}</span> mins</span>
-            <span className="fstat-dot" />
-            <span className="fstat"><span className="fstat-val">{forest.length}</span> 🌲</span>
-          </div>
-        </div>
-      )}
+            {filteredForest.length === 0 ? (
+              <p className="forest-empty">No trees in this period.</p>
+            ) : (
+              <div className="iso-forest-wrap">
+                <IsometricForest forest={filteredForest} />
+              </div>
+            )}
+
+            <div className="forest-stats-bar">
+              <span className="fstat"><span className="fstat-val">{filteredMins}</span> mins</span>
+              <span className="fstat-dot" />
+              <span className="fstat"><span className="fstat-val">{filteredLive}</span> 🌳</span>
+              {filteredDead > 0 && (
+                <>
+                  <span className="fstat-dot" />
+                  <span className="fstat"><span className="fstat-val">{filteredDead}</span> 🥀</span>
+                </>
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

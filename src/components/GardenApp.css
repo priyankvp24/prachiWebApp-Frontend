@@ -55,18 +55,23 @@
 /* ── Setup ring ── */
 .setup-ring-wrapper {
   position: relative;
-  width: 200px;
-  height: 200px;
+  width: 220px;
+  height: 220px;
   margin: 10px auto;
   cursor: grab;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .setup-ring-wrapper:active { cursor: grabbing; }
 
 .setup-ring-svg {
   display: block;
+  width: 220px;
+  height: 220px;
   transform: rotate(-90deg);
-  user-select: none;
+  touch-action: none;
 }
 
 .ring-label {
@@ -79,11 +84,12 @@
   align-items: center;
   pointer-events: none;
   line-height: 1;
+  gap: 2px;
 }
 
 .ring-minutes {
   font-family: 'Playfair Display', serif;
-  font-size: 3rem;
+  font-size: 2rem;
   font-weight: 700;
   color: white;
   line-height: 1;
@@ -91,11 +97,10 @@
 
 .ring-unit {
   font-family: 'Poppins', sans-serif;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.65);
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  margin-top: 5px;
 }
 
 /* ── Forest-app growing scene ── */
@@ -235,6 +240,52 @@
   margin: 0 0 14px;
   font-weight: 400;
   letter-spacing: 0.04em;
+}
+
+.forest-empty {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-align: center;
+  padding: 28px 0;
+  font-style: italic;
+}
+
+/* ── Time filter pills ── */
+.forest-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.filter-pill {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.filter-pill:hover {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.filter-pill.active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.45);
 }
 
 /* ── Isometric forest view ── */
