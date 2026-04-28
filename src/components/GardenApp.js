@@ -4,6 +4,16 @@ import './GardenApp.css';
 const PHASE = { SETUP: 'setup', GROWING: 'growing', COMPLETE: 'complete', DEAD: 'dead' };
 const GROW_C = 2 * Math.PI * 128;
 
+// Returns the UTC timestamp for midnight of the current day in NYC time
+const nycMidnightMs = () => {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); // "YYYY-MM-DD"
+  const utcProxy = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
+  const nycProxy = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  return new Date(dateStr + 'T00:00:00Z').getTime() + (utcProxy - nycProxy);
+};
+const ordSuffix = n => n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
+
 const TIME_FILTERS = [
   { key: '7d',   label: 'Week',     ms: 7   * 86400000 },
   { key: '14d',  label: '2 Weeks',  ms: 14  * 86400000 },
@@ -264,12 +274,21 @@ function GardenApp() {
 
   useEffect(() => {
     if (phase !== PHASE.GROWING || timeLeft !== 0 || totalTimeRef.current === 0) return;
-    const newTree = { id: Date.now(), minutes: Math.round(totalTimeRef.current / 60) };
+    const minutes = Math.round(totalTimeRef.current / 60);
+    const newTree = { id: Date.now(), minutes };
+    const midnight      = nycMidnightMs();
+    const plantedToday  = forest.filter(t => !t.dead && t.id >= midnight).length;
+    const ordinal       = plantedToday + 1;
     setForest(prev => {
       const updated = [...prev, newTree];
       localStorage.setItem('garden_forest', JSON.stringify(updated));
       return updated;
     });
+    fetch('/api/notify/tree-planted', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ minutes, ordinal }),
+    }).catch(() => {});
     setPhase(PHASE.COMPLETE);
   }, [phase, timeLeft]);
 
@@ -285,6 +304,9 @@ function GardenApp() {
   const killTree = () => {
     const elapsedMinutes = Math.max(0, Math.round((totalTimeRef.current - timeLeftRef.current) / 60));
     const deadTree = { id: Date.now(), minutes: elapsedMinutes, dead: true };
+    const midnight  = nycMidnightMs();
+    const deadToday = forest.filter(t => t.dead && t.id >= midnight).length;
+    const ordinal   = deadToday + 1;
     setForest(prev => {
       const updated = [...prev, deadTree];
       localStorage.setItem('garden_forest', JSON.stringify(updated));
@@ -294,7 +316,7 @@ function GardenApp() {
     fetch('/api/notify/tree-died', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ minutes: elapsedMinutes }),
+      body: JSON.stringify({ minutes: elapsedMinutes, ordinal }),
     }).catch(() => {});
   };
 
