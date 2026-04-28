@@ -12,7 +12,6 @@ const nycMidnightMs = () => {
   const nycProxy = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
   return new Date(dateStr + 'T00:00:00Z').getTime() + (utcProxy - nycProxy);
 };
-const ordSuffix = n => n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
 
 const TIME_FILTERS = [
   { key: '7d',   label: 'Week',     ms: 7   * 86400000 },
@@ -260,6 +259,7 @@ function GardenApp() {
   const circleRef    = useRef(null);
   const totalTimeRef = useRef(0);
   const timeLeftRef  = useRef(0);
+  const killTreeRef  = useRef(null);
   const SETUP_R = 90;
   const SETUP_C = 2 * Math.PI * SETUP_R;
 
@@ -290,13 +290,14 @@ function GardenApp() {
       body: JSON.stringify({ minutes, ordinal }),
     }).catch(() => {});
     setPhase(PHASE.COMPLETE);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, timeLeft]);
 
   useEffect(() => { timeLeftRef.current = timeLeft; }, [timeLeft]);
 
   useEffect(() => {
     if (phase !== PHASE.GROWING) return;
-    const onVis = () => { if (document.hidden) killTree(); };
+    const onVis = () => { if (document.hidden) killTreeRef.current?.(); };
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
   }, [phase]);
@@ -319,6 +320,7 @@ function GardenApp() {
       body: JSON.stringify({ minutes: elapsedMinutes, ordinal }),
     }).catch(() => {});
   };
+  killTreeRef.current = killTree;
 
   const startSession = () => {
     if (selectedTime < 1) return;
