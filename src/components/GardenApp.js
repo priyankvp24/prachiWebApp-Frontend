@@ -291,7 +291,11 @@ function GardenApp() {
       return updated;
     });
     setPhase(PHASE.DEAD);
-    fetch('/api/notify/tree-died', { method: 'POST' }).catch(() => {});
+    fetch('/api/notify/tree-died', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ minutes: elapsedMinutes }),
+    }).catch(() => {});
   };
 
   const startSession = () => {
