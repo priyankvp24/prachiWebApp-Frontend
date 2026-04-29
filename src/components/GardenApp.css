@@ -333,3 +333,185 @@
   height: 100%;
   display: block;
 }
+
+/* ── View toggle ── */
+.view-toggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 24px;
+  padding: 3px;
+  margin-bottom: 14px;
+}
+
+.view-tab {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.45);
+  background: none;
+  border: none;
+  border-radius: 20px;
+  padding: 7px 24px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.view-tab.active {
+  color: white;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* ── Daily view ── */
+.daily-view {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.daily-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 14px;
+  padding: 14px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.daily-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.daily-date {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  color: white;
+  font-weight: 600;
+}
+
+.daily-meta {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.55);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.daily-meta-val {
+  font-weight: 600;
+  color: white;
+}
+
+.daily-meta-dot {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.day-timeline-svg {
+  width: 100%;
+  height: 36px;
+  display: block;
+}
+
+.daily-trees-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: flex-end;
+}
+
+.daily-tree-item {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.13s;
+}
+
+.daily-tree-item:hover  { transform: translateY(-4px); }
+.daily-tree-item:active { transform: scale(0.93); }
+
+/* ── Tree info popup ── */
+.tree-popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+.tree-popup {
+  position: fixed;
+  width: 210px;
+  background: rgba(12, 26, 12, 0.93);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 18px;
+  padding: 18px 16px 16px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  animation: popup-in 0.15s ease;
+}
+
+@keyframes popup-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+.tree-popup-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 5px;
+  transition: color 0.15s;
+}
+
+.tree-popup-close:hover { color: white; }
+
+.tree-popup-tree {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60px;
+}
+
+.tree-popup-rows {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tree-popup-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.tree-popup-key {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
+}
+
+.tree-popup-val {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.83rem;
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 400;
+}
