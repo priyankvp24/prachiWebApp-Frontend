@@ -487,7 +487,7 @@ function GardenApp() {
       localStorage.setItem('garden_forest', JSON.stringify(updated));
       return updated;
     });
-    fetch('/api/notify/tree-planted', {
+    fetch('https://prachiwebappbackend.onrender.com/api/notify/tree-planted', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ minutes, ordinal }),
@@ -517,7 +517,7 @@ function GardenApp() {
       return updated;
     });
     setPhase(PHASE.DEAD);
-    fetch('/api/notify/tree-died', {
+    fetch('https://prachiwebappbackend.onrender.com/api/notify/tree-died', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ minutes: elapsedMinutes, ordinal }),
